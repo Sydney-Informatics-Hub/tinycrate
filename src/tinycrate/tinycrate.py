@@ -35,13 +35,13 @@ class TinyCrate:
             self.graph = []
         self.directory = directory
         self._context_resolver = None  # Lazy initialization
-   
 
     @property
     def context_resolver(self):
         """Lazily initialize the context resolver to avoid unnecessary processing on initialization"""
         if self._context_resolver is None:
             from .jsonld_context import JSONLDContextResolver
+
             self._context_resolver = JSONLDContextResolver(self.context)
         return self._context_resolver
 
@@ -80,7 +80,9 @@ class TinyCrate:
 
     def write_json(self, crate_dir=None):
         """Write the json-ld to a file"""
-        if crate_dir is None:  # if no directory is set, use the current working directory
+        if (
+            crate_dir is None
+        ):  # if no directory is set, use the current working directory
             crate_dir = self.directory or "."
         Path(crate_dir).mkdir(parents=True, exist_ok=True)
         with open(Path(crate_dir) / "ro-crate-metadata.json", "w") as jfh:
@@ -88,16 +90,16 @@ class TinyCrate:
 
     def resolve_term(self, term):
         """Resolve a JSON-LD term like 'name' or 'schema:name' to its full IRI
-        
+
         Args:
             term (str): The term to resolve, e.g., 'name' or 'schema:name'
-            
+
         Returns:
             str: The full IRI for the term, or the original term if not found
         """
         return self.context_resolver.resolve_term(term)
 
-  
+
 class TinyEntity:
     def __init__(self, crate, ejsonld):
         self.crate = crate
