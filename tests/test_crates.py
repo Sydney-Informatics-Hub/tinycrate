@@ -1,4 +1,3 @@
-# from pathlib import Path
 
 import json
 from pathlib import Path
@@ -40,6 +39,24 @@ def test_load_file(crates):
         tfile = crate.get("doc001/textfile.txt")
         contents = tfile.fetch()
         with open(Path(cratedir) / "doc001" / "textfile.txt", "r") as tfh:
+            contents2 = tfh.read()
+            assert contents == contents2
+
+
+def test_load_utf8(crates):
+    """Reads a textfile known to have utf-8 characters which cause
+    encoding bugs on a Jupyter notebook on Windows"""
+    cratedir = crates["utf8"]
+    with open(Path(cratedir) / "ro-crate-metadata.json", "r") as jfh:
+        jsonld = json.load(jfh)
+        crate = TinyCrate(jsonld=jsonld, directory=cratedir)
+        tfile = crate.get("data/2-035-plain.txt")
+        contents = tfile.fetch()
+        # note: have to also explicitly set the encoding on this read so that
+        # it doesn't also break the tests
+        with open(
+            Path(cratedir) / "data" / "2-035-plain.txt", "r", encoding="utf-8"
+        ) as tfh:
             contents2 = tfh.read()
             assert contents == contents2
 
