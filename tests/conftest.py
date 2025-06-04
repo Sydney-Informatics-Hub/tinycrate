@@ -51,10 +51,11 @@ def contexts():
         ],
     }
 
+
 @pytest.fixture
 def ro_crate_context():
     return {
-       "@context": {
+        "@context": {
             "schema": "http://schema.org/",
             "name": "schema:name",
             "description": "schema:description",
