@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.2]
 
-Fixed Windows encoding bugs, added context resolver
+Fixed Windows encoding bugs, added context resolver and CI
 
 ## [0.0.1]
 
