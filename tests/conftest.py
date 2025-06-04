@@ -8,3 +8,49 @@ def crates():
         "wide": "./tests/crates/wide",
         "textfiles": "./tests/crates/textfiles",
     }
+
+
+@pytest.fixture
+def contexts():
+    return {
+        "simple": {
+            "name": "http://schema.org/name",
+            "description": "http://schema.org/description",
+            "schema": "http://schema.org/",
+            "@vocab": "http://example.org/vocab/",
+            "complex": {"@id": "http://example.org/complex"}
+
+        },
+        "medium": {
+            "@context": [
+                "https://w3id.org/ro/crate/1.1/context",
+                {
+                    "@vocab": "http://schema.org/",
+                    "ldac": "https://w3id.org/ldac/terms#"
+                },
+                {
+                    "register": "http://w3id.org/meta-share/meta-share/register",
+                    "local": "arcp://name,corpus-of-oz-early-english/terms#"
+                }
+            ],
+        },
+        "complex": [
+            "https://w3id.org/ro/crate/1.1/context",
+            {
+                "@vocab": "http://schema.org/",
+                "ldac": "https://w3id.org/ldac/terms#"
+            },
+            {
+                "register": "http://w3id.org/meta-share/meta-share/register",
+                "birthDateEstimateStart": "#birthDateEstimateStart",
+                "birthDateEstimateEnd": "#birthDateEstimateEnd",
+                "arrivalDate": "#arrivalDate",
+                "arrivalDateEstimateStart": "#arrivalDateEstimateStart",
+                "arrivalDateEstimateEnd": "#arrivalDateEstimateEnd",
+                "bornInAustralia": "#bornInAustralia",
+                "yearsLivedInAustralia": "#yearsLivedInAustralia",
+                "socialClass": "#socialClass",
+                "textType": "#textType"
+            }
+        ]
+    }
