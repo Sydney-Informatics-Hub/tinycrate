@@ -12,14 +12,7 @@ def test_init_with_dict(contexts):
     assert resolver.context_map == cdict
 
 
-
-
-
-
-
 # test test. tes
-
-
 
 
 def test_init_with_url(contexts, httpserver: HTTPServer):
