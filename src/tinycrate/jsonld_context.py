@@ -6,7 +6,7 @@ import json
 import requests
 from pathlib import Path
 import logging
-from typing import Dict, List, Union, Any, Optional
+from typing import Dict, List, Union
 
 logger = logging.getLogger(__name__)
 
