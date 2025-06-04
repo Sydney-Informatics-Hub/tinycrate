@@ -1,13 +1,9 @@
-
 import json
 from pathlib import Path
 from fuzz import random_text, random_property
 from pytest_httpserver import HTTPServer
 
 from tinycrate.tinycrate import TinyCrate, minimal_crate
-
-
-# https://pytest-httpserver.readthedocs.io/en/latest/ for testing fetch
 
 
 def test_crate(tmp_path):

@@ -2,7 +2,6 @@ from tinycrate.jsonld_context import JSONLDContextResolver, ContextResolutionExc
 import pytest
 from pytest_httpserver import HTTPServer
 import json
-from pathlib import Path
 
 
 def test_init_with_dict(contexts):
@@ -24,11 +23,11 @@ def test_init_with_url(contexts, httpserver: HTTPServer):
     assert context_map == cdict
 
 
-def test_init_with_local_file(contexts, tmpdir):
+def test_init_with_local_file(contexts, tmp_path):
     """Test initialization with a local file context"""
     # Create a temporary context file
     cdict = contexts["simple"]
-    fn = str(Path(tmpdir) / "context.json")
+    fn = str(tmp_path / "context.json")
     with open(fn, "w") as fh:
         json.dump(cdict, fh)
     resolver = JSONLDContextResolver(fn)
