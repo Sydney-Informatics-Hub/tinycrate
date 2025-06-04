@@ -50,3 +50,15 @@ def contexts():
             },
         ],
     }
+
+@pytest.fixture
+def ro_crate_context():
+    return {
+       "@context": {
+            "schema": "http://schema.org/",
+            "name": "schema:name",
+            "description": "schema:description",
+            "url": "schema:url",
+            "ImageObject": "schema:ImageObject",
+        }
+    }
