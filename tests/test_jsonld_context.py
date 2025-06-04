@@ -54,23 +54,24 @@ import tempfile
 #             }
 #         ]
 
-        # Create a mock for the RO-Crate context
-    #     self.mock_rocrate_context = {
-    #         "@context": {
-    #             "schema": "http://schema.org/",
-    #             "name": "schema:name",
-    #             "description": "schema:description",
-    #             "url": "schema:url",
-    #             "ImageObject": "schema:ImageObject",
-    #         }
-    #     }
+# Create a mock for the RO-Crate context
+#     self.mock_rocrate_context = {
+#         "@context": {
+#             "schema": "http://schema.org/",
+#             "name": "schema:name",
+#             "description": "schema:description",
+#             "url": "schema:url",
+#             "ImageObject": "schema:ImageObject",
+#         }
+#     }
 
-    # def _create_temp_context_file(self, context):
-    #     """Helper to create a temporary context file"""
-    #     fd, path = tempfile.mkstemp(suffix='.json')
-    #     with os.fdopen(fd, 'w') as f:
-    #         json.dump(context, f)
-    #     return path
+# def _create_temp_context_file(self, context):
+#     """Helper to create a temporary context file"""
+#     fd, path = tempfile.mkstemp(suffix='.json')
+#     with os.fdopen(fd, 'w') as f:
+#         json.dump(context, f)
+#     return path
+
 
 def test_init_with_dict(contexts):
     """Test initialization with a dictionary context"""
@@ -79,6 +80,7 @@ def test_init_with_dict(contexts):
     assert resolver.context_map["name"] == cdict["name"]
     assert resolver.context_map["schema"] == cdict["schema"]
     assert resolver.context_map["complex"]["@id"], cdict["complex"]["@id"]
+
 
 #     @patch('tinycrate.jsonld_context.requests.get')
 #     def test_init_with_url(self, mock_get):
