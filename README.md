@@ -7,15 +7,16 @@ with crates on disk and crates over the network.
 
     from tinycrate.tinycrate import TinyCrate
 
-    tc = TinyCrate(jsonld)
-    tc = TinyCrate(url)
-    tc = TinyCrate(crate_path)
+    tc_from_json = TinyCrate(jsonld)
+    tc_from_url = TinyCrate(url)
+    tc_from_disk = TinyCrate(crate_path)
 
-    r = tc.root()
+    r = tc_from_url.root()
 
-    for entity in tc.all():
+    for entity in tc_from_url.all():
         for prop.value in entity.items():
             print(f"{prop}: {value}"")
         if entity.type == "File":
             contents = entity.fetch()
+            print(contents)
     
