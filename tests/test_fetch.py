@@ -13,7 +13,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
     )
 
     cratedir = crates["textfiles"]
-    crate = TinyCrate(source=cratedir)
+    crate = TinyCrate(cratedir)
     # add an entity to the crate with the endpoint URL as the id
     urlid = httpserver.url_for("/textfileonurl.txt")
     crate.add("File", urlid, {"name": "textfileonurl.txt"})
