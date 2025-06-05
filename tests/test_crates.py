@@ -1,13 +1,10 @@
-
-import json
 from pathlib import Path
 from fuzz import random_text, random_property
+import json
+
 from pytest_httpserver import HTTPServer
 
 from tinycrate.tinycrate import TinyCrate, minimal_crate
-
-
-# https://pytest-httpserver.readthedocs.io/en/latest/ for testing fetch
 
 
 def test_crate(tmp_path):
@@ -19,65 +16,88 @@ def test_crate(tmp_path):
             prop, val = random_property()
             props[prop] = val
         jcrate.add("Dataset", f"#ds{i:05d}", props)
-    jsonf = Path(tmp_path) / "ro-crate-metadata.json"
     jcrate.write_json(Path(tmp_path))
-    with open(jsonf, "r") as jfh:
-        jsonld = json.load(jfh)
-        jcrate2 = TinyCrate(jsonld=jsonld)
-        for i in range(1000):
-            eid = f"#ds{i:05d}"
-            ea = jcrate.get(eid)
-            eb = jcrate2.get(eid)
-            assert ea.props == eb.props
+    jcrate2 = TinyCrate(source=tmp_path)
+    for i in range(1000):
+        eid = f"#ds{i:05d}"
+        ea = jcrate.get(eid)
+        eb = jcrate2.get(eid)
+        assert ea.props == eb.props
+
+
+def load_json(json_file):
+    with open(json_file, "r") as fh:
+        contents = fh.read()
+    return json.loads(contents)
 
 
 def test_load_file(crates):
+    "Load from a JSON-LD file"
     cratedir = crates["textfiles"]
-    with open(Path(cratedir) / "ro-crate-metadata.json", "r") as jfh:
-        jsonld = json.load(jfh)
-        crate = TinyCrate(jsonld=jsonld, directory=cratedir)
-        tfile = crate.get("doc001/textfile.txt")
-        contents = tfile.fetch()
-        with open(Path(cratedir) / "doc001" / "textfile.txt", "r") as tfh:
-            contents2 = tfh.read()
-            assert contents == contents2
+    jsonld_file = Path(cratedir) / "ro-crate-metadata.json"
+    crate = TinyCrate(jsonld_file)
+    tfile = crate.get("doc001/textfile.txt")
+    contents = tfile.fetch()
+    with open(Path(cratedir) / "doc001" / "textfile.txt", "r") as tfh:
+        contents2 = tfh.read()
+        assert contents == contents2
+    assert crate.directory.samefile(cratedir)
+    jsonld = load_json(jsonld_file)
+    for json_ent in jsonld["@graph"]:
+        entity = crate.get(json_ent["@id"])
+        assert entity is not None
+        for prop, val in entity.items():
+            assert json_ent[prop] == val
+
+
+def test_load_dir(crates):
+    "Load from a directory containing a JSON-LD file"
+    cratedir = crates["textfiles"]
+    crate = TinyCrate(Path(cratedir))
+    tfile = crate.get("doc001/textfile.txt")
+    contents = tfile.fetch()
+    with open(Path(cratedir) / "doc001" / "textfile.txt", "r") as tfh:
+        contents2 = tfh.read()
+        assert contents == contents2
+    assert crate.directory.samefile(cratedir)
+    jsonld_file = Path(cratedir) / "ro-crate-metadata.json"
+    jsonld = load_json(jsonld_file)
+    for json_ent in jsonld["@graph"]:
+        entity = crate.get(json_ent["@id"])
+        assert entity is not None
+        for prop, val in entity.items():
+            assert json_ent[prop] == val
+
+
+def test_load_url(crates, httpserver: HTTPServer):
+    "Load from a JSON-LD file on a URL"
+    cratedir = crates["textfiles"]
+    with open(Path(cratedir) / "ro-crate-metadata.json", "r") as fh:
+        contents = fh.read()
+    httpserver.expect_request("/ro-crate-metadata.json").respond_with_data(
+        contents, content_type="application/json"
+    )
+    url = httpserver.url_for("/ro-crate-metadata.json")
+    crate = TinyCrate(url)
+    jsonld = json.loads(contents)
+    for json_ent in jsonld["@graph"]:
+        entity = crate.get(json_ent["@id"])
+        assert entity is not None
+        for prop, val in entity.items():
+            assert json_ent[prop] == val
 
 
 def test_load_utf8(crates):
     """Reads a textfile known to have utf-8 characters which cause
     encoding bugs on a Jupyter notebook on Windows"""
     cratedir = crates["utf8"]
-    with open(Path(cratedir) / "ro-crate-metadata.json", "r") as jfh:
-        jsonld = json.load(jfh)
-        crate = TinyCrate(jsonld=jsonld, directory=cratedir)
-        tfile = crate.get("data/2-035-plain.txt")
-        contents = tfile.fetch()
-        # note: have to also explicitly set the encoding on this read so that
-        # it doesn't also break the tests
-        with open(
-            Path(cratedir) / "data" / "2-035-plain.txt", "r", encoding="utf-8"
-        ) as tfh:
-            contents2 = tfh.read()
-            assert contents == contents2
-
-
-def test_load_url(crates, httpserver: HTTPServer):
-    # test http endpoint with some content
-    contents = """
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-"""
-    httpserver.expect_request("/textfileonurl.txt").respond_with_data(
-        contents, content_type="text/plain"
-    )
-
-    cratedir = crates["textfiles"]
-    with open(Path(cratedir) / "ro-crate-metadata.json", "r") as jfh:
-        jsonld = json.load(jfh)
-        crate = TinyCrate(jsonld=jsonld, directory=cratedir)
-        # add an entity to the crate with the endpoint URL as the id
-        urlid = httpserver.url_for("/textfileonurl.txt")
-        crate.add("File", urlid, {"name": "textfileonurl.txt"})
-        # get the entity and try to fetch
-        efile = crate.get(urlid)
-        contents2 = efile.fetch()
+    crate = TinyCrate(source=cratedir)
+    tfile = crate.get("data/2-035-plain.txt")
+    contents = tfile.fetch()
+    # note: have to also explicitly set the encoding on this read so that
+    # it doesn't also break the tests
+    with open(
+        Path(cratedir) / "data" / "2-035-plain.txt", "r", encoding="utf-8"
+    ) as tfh:
+        contents2 = tfh.read()
         assert contents == contents2
