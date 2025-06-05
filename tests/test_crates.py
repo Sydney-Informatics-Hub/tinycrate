@@ -35,7 +35,7 @@ def test_load_file(crates):
     "Load from a JSON-LD file"
     cratedir = crates["textfiles"]
     jsonld_file = Path(cratedir) / "ro-crate-metadata.json"
-    crate = TinyCrate(source=jsonld_file)
+    crate = TinyCrate(jsonld_file)
     tfile = crate.get("doc001/textfile.txt")
     contents = tfile.fetch()
     with open(Path(cratedir) / "doc001" / "textfile.txt", "r") as tfh:
@@ -53,7 +53,7 @@ def test_load_file(crates):
 def test_load_dir(crates):
     "Load from a directory containing a JSON-LD file"
     cratedir = crates["textfiles"]
-    crate = TinyCrate(source=Path(cratedir))
+    crate = TinyCrate(Path(cratedir))
     tfile = crate.get("doc001/textfile.txt")
     contents = tfile.fetch()
     with open(Path(cratedir) / "doc001" / "textfile.txt", "r") as tfh:
@@ -78,7 +78,7 @@ def test_load_url(crates, httpserver: HTTPServer):
         contents, content_type="application/json"
     )
     url = httpserver.url_for("/ro-crate-metadata.json")
-    crate = TinyCrate(source=url)
+    crate = TinyCrate(url)
     jsonld = json.loads(contents)
     for json_ent in jsonld["@graph"]:
         entity = crate.get(json_ent["@id"])
