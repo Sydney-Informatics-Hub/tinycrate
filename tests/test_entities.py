@@ -25,7 +25,7 @@ def test_modify_entity(tmp_path):
     crate.write_json(tmp_path)
     with open(jsonf, "r") as jfh:
         jsonld = json.load(jfh)
-        crate2 = TinyCrate(jsonld=jsonld)
+        crate2 = TinyCrate(jsonld)
         e2 = crate2.get("#mydata")
         assert e2 is not None
         assert e2["name"] == new_name
