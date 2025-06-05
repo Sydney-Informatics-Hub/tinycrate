@@ -25,6 +25,12 @@ def test_crate(tmp_path):
         assert ea.props == eb.props
 
 
+def load_json(json_file):
+    with open(json_file, "r") as fh:
+        contents = fh.read()
+    return json.loads(contents)
+
+
 def test_load_file(crates):
     "Load from a JSON-LD file"
     cratedir = crates["textfiles"]
@@ -36,19 +42,31 @@ def test_load_file(crates):
         contents2 = tfh.read()
         assert contents == contents2
     assert crate.directory.samefile(cratedir)
+    jsonld = load_json(jsonld_file)
+    for json_ent in jsonld["@graph"]:
+        entity = crate.get(json_ent["@id"])
+        assert entity is not None
+        for prop, val in entity.items():
+            assert json_ent[prop] == val
 
 
 def test_load_dir(crates):
     "Load from a directory containing a JSON-LD file"
     cratedir = crates["textfiles"]
-    jsonld_file = Path(cratedir)
-    crate = TinyCrate(source=jsonld_file)
+    crate = TinyCrate(source=Path(cratedir))
     tfile = crate.get("doc001/textfile.txt")
     contents = tfile.fetch()
     with open(Path(cratedir) / "doc001" / "textfile.txt", "r") as tfh:
         contents2 = tfh.read()
         assert contents == contents2
     assert crate.directory.samefile(cratedir)
+    jsonld_file = Path(cratedir) / "ro-crate-metadata.json"
+    jsonld = load_json(jsonld_file)
+    for json_ent in jsonld["@graph"]:
+        entity = crate.get(json_ent["@id"])
+        assert entity is not None
+        for prop, val in entity.items():
+            assert json_ent[prop] == val
 
 
 def test_load_url(crates, httpserver: HTTPServer):
