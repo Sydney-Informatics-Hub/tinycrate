@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.2]
 
-auto date bug
+Fixed auto date bug, added type annotations to tinycrate.py
 
 ## [0.1.1]
 
