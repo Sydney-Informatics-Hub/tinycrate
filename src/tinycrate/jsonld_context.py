@@ -29,7 +29,7 @@ class JSONLDContextResolver:
     - Term definitions
     """
 
-    def __init__(self, context: Optional[str]):
+    def __init__(self, context: Optional[str] = None):
         """
         Initialize the context resolver
 
