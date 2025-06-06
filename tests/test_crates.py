@@ -1,10 +1,26 @@
 from pathlib import Path
 from fuzz import random_text, random_property
 import json
+import datetime
 
 from pytest_httpserver import HTTPServer
 
 from tinycrate.tinycrate import TinyCrate, minimal_crate
+
+
+def test_minimal_crate():
+    """Test for the date bug in a minimal crate"""
+    isodate = datetime.datetime.now().isoformat()[:10]
+    # create a crate with a known date
+    crate = minimal_crate(date_published=isodate)
+    r = crate.root()
+    assert r["datePublished"] == isodate
+    # create a crate which will supply its own date
+    crate2 = minimal_crate()
+    assert crate2 is not None
+    r2 = crate.root()
+    isodate2 = datetime.datetime.fromisoformat(r2["datePublished"])
+    assert isodate2 is not None
 
 
 def test_crate(tmp_path):
