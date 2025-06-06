@@ -2,7 +2,7 @@ from pathlib import Path, PurePath
 import json
 import requests
 import datetime
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from tinycrate.jsonld_context import JSONLDContextResolver
 
@@ -88,7 +88,7 @@ class TinyEntity:
 class TinyCrate:
     """Object representing an RO-Crate"""
 
-    def __init__(self, source: str | Path | None = None) -> None:
+    def __init__(self, source: Union[str, Path, None] = None) -> None:
         self.directory: Optional[Path] = None
         self._context_resolver: Optional[JSONLDContextResolver] = None
         if source is not None:
@@ -205,15 +205,16 @@ class TinyCrate:
 
 
 def minimal_crate(
-    name="Minimal crate",
-    description="Minimal crate",
-    date_published=None,
-):
+    name: str = "Minimal crate",
+    description: str = "Minimal crate",
+    date_published: Optional[str] = None,
+) -> TinyCrate:
     """Create ROCrate json with the minimal structure. Allowing the caller
     to pass in the datePublished to ensure that this can be run
     deterministically in tests"""
     crate = TinyCrate()
     license_id = "https://creativecommons.org/licenses/by-nc-sa/3.0/au/"
+    dp: str = ""
     if date_published is None:
         dp = datetime.datetime.now().isoformat()[:10]
     else:

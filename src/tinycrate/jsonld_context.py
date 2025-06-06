@@ -6,7 +6,7 @@ import json
 import requests
 from pathlib import Path
 import logging
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class JSONLDContextResolver:
     - Term definitions
     """
 
-    def __init__(self, context=None):
+    def __init__(self, context: Optional[str]):
         """
         Initialize the context resolver
 
@@ -45,14 +45,14 @@ class JSONLDContextResolver:
             context if context is not None else "https://w3id.org/ro/crate/1.1/context"
         )
         # The merged, final context mapping
-        self.context_map = {}
+        self.context_map: Dict = {}
         # Cache of downloaded remote contexts
-        self._context_cache = {}
+        self._context_cache: Dict = {}
 
         # Process and resolve the context on initialization
         self._resolve_context()
 
-    def _resolve_context(self):
+    def _resolve_context(self) -> None:
         """Process and resolve the context, merging all parts"""
         try:
             # Check if we have a wrapped @context
@@ -216,7 +216,7 @@ class JSONLDContextResolver:
         """String representation showing number of terms in the context"""
         return f"JSONLDContextResolver with {len(self.context_map)} terms"
 
-    def print_context(self):
+    def print_context(self) -> None:
         """Print the resolved context for debugging"""
         for key, value in sorted(self.context_map.items()):
             print(f"{key}: {value}")
