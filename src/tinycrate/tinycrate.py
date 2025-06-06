@@ -1,8 +1,9 @@
+from __future__ import annotations
 from pathlib import Path, PurePath
 import json
 import requests
 import datetime
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Tuple, Dict, Generator
 
 from tinycrate.jsonld_context import JSONLDContextResolver
 
@@ -24,8 +25,14 @@ class TinyCrateException(Exception):
     pass
 
 
+# todo: make a type alias for an entity property - this should be
+# - a str
+# - a list
+# - a dict
+
+
 class TinyEntity:
-    def __init__(self, crate, ejsonld):
+    def __init__(self, crate: TinyCrate, ejsonld: dict[str, Any]) -> None:
         self.crate = crate
         self.type = ejsonld["@type"]
         self.id = ejsonld["@id"]
@@ -37,10 +44,10 @@ class TinyEntity:
                 self._graph_index = i
                 break
 
-    def __getitem__(self, prop):
+    def __getitem__(self, prop: str) -> Union[str, Dict, None]:
         return self.props.get(prop, None)
 
-    def __setitem__(self, prop, val):
+    def __setitem__(self, prop: str, val: Union[str, Dict]) -> None:
         self.props[prop] = val
         # Update the corresponding entity in the parent crate's graph
         if self._graph_index is not None:
@@ -53,18 +60,25 @@ class TinyEntity:
                     self._graph_index = i
                     break
 
-    def items(self):
+    def get_dict(self, prop: str) -> Optional[Dict]:
+        """get a property on this entity but only return it if it's a Dict"""
+        val = self[prop]
+        if type(val) is dict:
+            return val
+        return None
+
+    def items(self) -> Generator[Tuple[str, Union[str, Dict]]]:
         for k, v in self.props.items():
             yield k, v
 
-    def fetch(self):
+    def fetch(self) -> str:
         """Get this entity's content"""
         if self.id[:4] == "http":
             return self._fetch_http()
         else:
             return self._fetch_file()
 
-    def _fetch_http(self):
+    def _fetch_http(self) -> str:
         response = requests.get(self.id)
         if response.ok:
             return response.text
@@ -72,7 +86,7 @@ class TinyEntity:
             f"http request to {self.id} failed with status {response.status_code}"
         )
 
-    def _fetch_file(self):
+    def _fetch_file(self) -> str:
         if self.crate.directory is None:
             # maybe use pwd for this?
             raise TinyCrateException("Can't load file: no crate directory")
@@ -172,13 +186,23 @@ class TinyCrate:
         else:
             return None
 
+    def deref(self, entity: TinyEntity, prop: str) -> Optional[TinyEntity]:
+        """Given an entity and a property, try to follow the @id - needs
+        to be fixed to work with lists"""
+        id_dict: Optional[Dict] = entity.get_dict(prop)
+        if id_dict is not None:
+            ref: Optional[str] = id_dict.get("@id", None)
+            if ref is not None:
+                return self.get(ref)
+        return None
+
     def root(self) -> TinyEntity:
         metadata = self.get("ro-crate-metadata.json")
         if metadata is None:
             raise TinyCrateException("no ro-crate-metadata.json entity")
-        root = self.get(metadata["about"]["@id"])
+        root = self.deref(metadata, "about")
         if root is None:
-            raise TinyCrateException("malformed or missing root entity")
+            raise TinyCrateException("Missing or malformed root entity")
         return root
 
     def json(self) -> str:
