@@ -209,10 +209,20 @@ class TinyEntity:
             raise TinyCrateException(f"File read failed: {e}")
 
 
-def minimal_crate(name="Minimal crate", description="Minimal crate"):
-    """Create ROCrate json with the minimal structure"""
+def minimal_crate(
+    name="Minimal crate",
+    description="Minimal crate",
+    date_published=None,
+):
+    """Create ROCrate json with the minimal structure. Allowing the caller
+    to pass in the datePublished to ensure that this can be run
+    deterministically in tests"""
     crate = TinyCrate()
     license_id = "https://creativecommons.org/licenses/by-nc-sa/3.0/au/"
+    if date_published is None:
+        dp = datetime.datetime.now().isoformat()[:10]
+    else:
+        dp = date_published
     crate.add(
         "Dataset",
         "./",
@@ -220,7 +230,7 @@ def minimal_crate(name="Minimal crate", description="Minimal crate"):
             "name": name,
             "description": description,
             "license": {"@id": license_id},
-            "datePublished": datetime.datetime.now().year,  # Using datetime to get current year
+            "datePublished": dp,
         },
     )
     crate.add(
