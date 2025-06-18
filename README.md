@@ -19,4 +19,21 @@ with crates on disk and crates over the network.
         if entity.type == "File":
             contents = entity.fetch()
             print(contents)
+
+## Development
+
+To develop this package install the depenedencies using `uv`:
+
+```
+# Install in development mode
+uv pip install -e .
+# Manually install packages
+uv pip install pre-commit pytest-httpserver pytest ruff mypy
+```
+
+Run the tests using:
+
+```
+uv run pytest
+```
     
