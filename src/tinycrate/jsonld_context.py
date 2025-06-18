@@ -7,6 +7,7 @@ import requests
 from pathlib import Path
 import logging
 from typing import Dict, List, Union, Optional
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +167,7 @@ class JSONLDContextResolver:
         """
 
         # Skip terms that are already IRIs
-        if term.startswith(("http://", "https://")):
+        if re.match(r"\w+:\/\/", term):
             return term
 
         # Skip JSON-LD keywords
