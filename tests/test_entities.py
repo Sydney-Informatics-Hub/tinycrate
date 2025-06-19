@@ -46,4 +46,4 @@ def test_entity_iteration():
         val = entity.get(prop, None)
         assert entity[prop] == val
         count += 1
-        assert count < nitems
+        assert count <= nitems

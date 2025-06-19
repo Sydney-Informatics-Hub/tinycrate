@@ -3,7 +3,7 @@ from pathlib import Path, PurePath
 import json
 import requests
 import datetime
-from typing import Any, Optional, Union, Dict, ItemsView
+from typing import Any, Optional, Union, Dict, ItemsView, KeysView, ValuesView, Iterator
 
 from tinycrate.jsonld_context import JSONLDContextResolver
 
@@ -60,17 +60,17 @@ class TinyEntity:
                     self._graph_index = i
                     break
 
-    # def __contains__(self, prop: str) -> bool:
-    #     return prop in self.props
+    def __contains__(self, prop: str) -> bool:
+        return prop in self.props
 
-    # def __iter__(self) -> Iterator[str]:
-    #     yield from self.props.keys()
+    def __iter__(self) -> Iterator[str]:
+        yield from self.props.keys()
 
-    # def keys(self) -> List[str]:
-    #     return self.props.keys()
+    def keys(self) -> KeysView[str]:
+        return self.props.keys()
 
-    # def values(self) -> List[Union[str, Dict]]:
-    #     return self.props.values()
+    def values(self) -> ValuesView[Union[str, Dict]]:
+        return self.props.values()
 
     def items(self) -> ItemsView[str, Any]:
         return self.props.items()
