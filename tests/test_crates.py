@@ -2,6 +2,7 @@ from pathlib import Path
 from fuzz import random_text, random_property
 import json
 import datetime
+import sys
 
 from pytest_httpserver import HTTPServer
 
