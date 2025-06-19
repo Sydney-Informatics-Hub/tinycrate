@@ -31,3 +31,16 @@ def test_modify_entity(tmp_path):
         assert e2["name"] == new_name
     entity3 = crate.get("#mydata")
     assert entity3["name"] == new_name
+
+
+def test_entity_iteration():
+    crate = minimal_crate()
+    props = {"name": "A dataset", "description": "The description of the dataset"}
+    crate.add("Dataset", "#mydata", props)
+    entity = crate.get("#mydata")
+    for prop, val in props.items():
+        assert entity[prop] == val
+
+    for prop in entity:
+        val = entity.get(prop, None)
+        assert entity[prop] == val
