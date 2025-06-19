@@ -40,7 +40,10 @@ def test_entity_iteration():
     entity = crate.get("#mydata")
     for prop, val in props.items():
         assert entity[prop] == val
-
+    nitems = len(crate.graph)
+    count = 0
     for prop in entity:
         val = entity.get(prop, None)
         assert entity[prop] == val
+        count += 1
+        assert count < nitems

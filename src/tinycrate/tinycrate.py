@@ -3,7 +3,7 @@ from pathlib import Path, PurePath
 import json
 import requests
 import datetime
-from typing import Any, Optional, Union, Tuple, Dict, Generator
+from typing import Any, Optional, Union, Dict, ItemsView
 
 from tinycrate.jsonld_context import JSONLDContextResolver
 
@@ -47,7 +47,7 @@ class TinyEntity:
     def __getitem__(self, prop: str) -> Union[str, Dict, None]:
         return self.props.get(prop, None)
 
-    def __setitem__(self, prop: str, val: Union[str, Dict]) -> None:
+    def __setitem__(self, prop: str, val: Union[str, Any]) -> None:
         self.props[prop] = val
         # Update the corresponding entity in the parent crate's graph
         if self._graph_index is not None:
@@ -60,16 +60,30 @@ class TinyEntity:
                     self._graph_index = i
                     break
 
+    # def __contains__(self, prop: str) -> bool:
+    #     return prop in self.props
+
+    # def __iter__(self) -> Iterator[str]:
+    #     yield from self.props.keys()
+
+    # def keys(self) -> List[str]:
+    #     return self.props.keys()
+
+    # def values(self) -> List[Union[str, Dict]]:
+    #     return self.props.values()
+
+    def items(self) -> ItemsView[str, Any]:
+        return self.props.items()
+
+    def get(self, prop: str, default: Union[str, Any]) -> Union[str, Any]:
+        return self.props.get(prop, default)
+
     def get_dict(self, prop: str) -> Optional[Dict]:
         """get a property on this entity but only return it if it's a Dict"""
         val = self[prop]
         if type(val) is dict:
             return val
         return None
-
-    def items(self) -> Generator[Tuple[str, Union[str, Dict]]]:
-        for k, v in self.props.items():
-            yield k, v
 
     def fetch(self) -> str:
         """Get this entity's content"""
