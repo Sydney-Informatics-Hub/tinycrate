@@ -3,7 +3,7 @@ from pathlib import Path, PurePath
 import json
 import requests
 import datetime
-from typing import Any, Optional, Union, Dict
+from typing import Any, Optional, Union, List
 from collections import UserDict
 from tinycrate.jsonld_context import JSONLDContextResolver
 
@@ -25,14 +25,6 @@ class TinyCrateException(Exception):
     pass
 
 
-# todo: make a type alias for an entity property - this should be
-# - a str
-# - a list
-# - a dict
-
-# TODO - the dict stuff here should be replaced with UserDict?
-
-
 class TinyEntity(UserDict):
     def __init__(self, crate: TinyCrate, ejsonld: dict[str, Any]) -> None:
         self.crate = crate
@@ -46,6 +38,14 @@ class TinyEntity(UserDict):
                 self._graph_index = i
                 break
 
+    def __getitem__(self, prop: str) -> List[Union[str, Any]]:
+        if prop in self.data:
+            if type(self.data[prop]) is list:
+                return self.data[prop]
+            else:
+                return [self.data[prop]]
+        return []
+
     def __setitem__(self, prop: str, val: Union[str, Any]) -> None:
         self.data[prop] = val
         # Update the corresponding entity in the parent crate's graph
@@ -58,13 +58,6 @@ class TinyEntity(UserDict):
                     self.crate.graph[i][prop] = val
                     self._graph_index = i
                     break
-
-    def get_dict(self, prop: str) -> Optional[Dict]:
-        """get a property on this entity but only return it if it's a Dict"""
-        val = self[prop]
-        if type(val) is dict:
-            return val
-        return None
 
     def fetch(self) -> str:
         """Get this entity's content"""
@@ -182,13 +175,15 @@ class TinyCrate:
             return None
 
     def deref(self, entity: TinyEntity, prop: str) -> Optional[TinyEntity]:
-        """Given an entity and a property, try to follow the @id - needs
-        to be fixed to work with lists"""
-        id_dict: Optional[Dict] = entity.get_dict(prop)
-        if id_dict is not None:
-            ref: Optional[str] = id_dict.get("@id", None)
-            if ref is not None:
-                return self.get(ref)
+        """Given an entity and a property, try to follow the @id"""
+        id_val: List[Union[str, Any]] = entity[prop]
+        if len(id_val) == 0:
+            return None
+        if len(id_val) == 1:
+            if type(id_val[0]) is dict:
+                ref: Optional[str] = id_val[0].get("@id", None)
+                if ref is not None:
+                    return self.get(ref)
         return None
 
     def root(self) -> TinyEntity:

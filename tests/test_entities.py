@@ -10,7 +10,7 @@ def test_basic_entity():
     crate.add("Dataset", "#mydata", props)
     entity = crate.get("#mydata")
     for prop, val in props.items():
-        assert entity[prop] == val
+        assert entity[prop] == [val]
 
 
 def test_modify_entity(tmp_path):
@@ -28,9 +28,9 @@ def test_modify_entity(tmp_path):
         crate2 = TinyCrate(jsonld)
         e2 = crate2.get("#mydata")
         assert e2 is not None
-        assert e2["name"] == new_name
+        assert e2["name"] == [new_name]
     entity3 = crate.get("#mydata")
-    assert entity3["name"] == new_name
+    assert entity3["name"] == [new_name]
 
 
 def test_entity_iteration():
@@ -39,7 +39,7 @@ def test_entity_iteration():
     crate.add("Dataset", "#mydata", props)
     entity = crate.get("#mydata")
     for prop, val in props.items():
-        assert entity[prop] == val
+        assert entity[prop] == [val]
     nitems = len(crate.graph)
     count = 0
     for prop in entity:

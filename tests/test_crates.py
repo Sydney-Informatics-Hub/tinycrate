@@ -1,5 +1,5 @@
 from pathlib import Path
-from fuzz import random_text, random_property
+from fuzz import random_word, random_text, random_property
 import json
 import datetime
 
@@ -14,12 +14,12 @@ def test_minimal_crate():
     # create a crate with a known date
     crate = minimal_crate(date_published=isodate)
     r = crate.root()
-    assert r["datePublished"] == isodate
+    assert r["datePublished"] == [isodate]
     # create a crate which will supply its own date
     crate2 = minimal_crate()
     assert crate2 is not None
     r2 = crate.root()
-    isodate2 = datetime.datetime.fromisoformat(r2["datePublished"])
+    isodate2 = datetime.datetime.fromisoformat(r2["datePublished"][0])
     assert isodate2 is not None
 
 
@@ -29,7 +29,8 @@ def test_crate(tmp_path):
     for i in range(1000):
         props = {"name": random_text(4), "description": random_text(11)}
         for j in range(30):
-            prop, val = random_property()
+            prop = random_word()
+            val = random_property()
             props[prop] = val
         jcrate.add("Dataset", f"#ds{i:05d}", props)
     jcrate.write_json(Path(tmp_path))
@@ -45,6 +46,13 @@ def load_json(json_file):
     with open(json_file, "r") as fh:
         contents = fh.read()
     return json.loads(contents)
+
+
+def ensure_list(val):
+    if type(val) is list:
+        return val
+    else:
+        return [val]
 
 
 def test_load_file(crates):
@@ -63,7 +71,7 @@ def test_load_file(crates):
         entity = crate.get(json_ent["@id"])
         assert entity is not None
         for prop, val in entity.items():
-            assert json_ent[prop] == val
+            assert val == ensure_list(json_ent[prop])
 
 
 def test_load_dir(crates):
@@ -82,7 +90,7 @@ def test_load_dir(crates):
         entity = crate.get(json_ent["@id"])
         assert entity is not None
         for prop, val in entity.items():
-            assert json_ent[prop] == val
+            assert val == ensure_list(json_ent[prop])
 
 
 def test_load_url(crates, httpserver: HTTPServer):
@@ -100,7 +108,7 @@ def test_load_url(crates, httpserver: HTTPServer):
         entity = crate.get(json_ent["@id"])
         assert entity is not None
         for prop, val in entity.items():
-            assert json_ent[prop] == val
+            assert val == ensure_list(json_ent[prop])
 
 
 def test_load_utf8(crates):
