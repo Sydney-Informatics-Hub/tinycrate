@@ -3,8 +3,8 @@ from pathlib import Path, PurePath
 import json
 import requests
 import datetime
-from typing import Any, Optional, Union, Dict, ItemsView, KeysView, ValuesView, Iterator
-
+from typing import Any, Optional, Union, Dict
+from collections import UserDict
 from tinycrate.jsonld_context import JSONLDContextResolver
 
 LICENSE_ID = ("https://creativecommons.org/licenses/by-nc-sa/3.0/au/",)
@@ -30,13 +30,15 @@ class TinyCrateException(Exception):
 # - a list
 # - a dict
 
+# TODO - the dict stuff here should be replaced with UserDict?
 
-class TinyEntity:
+
+class TinyEntity(UserDict):
     def __init__(self, crate: TinyCrate, ejsonld: dict[str, Any]) -> None:
         self.crate = crate
         self.type = ejsonld["@type"]
         self.id = ejsonld["@id"]
-        self.props = dict(ejsonld)
+        self.data = dict(ejsonld)
         # Store index in parent crate's graph for later updates
         self._graph_index = None
         for i, entity in enumerate(self.crate.graph):
@@ -44,11 +46,8 @@ class TinyEntity:
                 self._graph_index = i
                 break
 
-    def __getitem__(self, prop: str) -> Union[str, Dict, None]:
-        return self.props.get(prop, None)
-
     def __setitem__(self, prop: str, val: Union[str, Any]) -> None:
-        self.props[prop] = val
+        self.data[prop] = val
         # Update the corresponding entity in the parent crate's graph
         if self._graph_index is not None:
             self.crate.graph[self._graph_index][prop] = val
@@ -59,24 +58,6 @@ class TinyEntity:
                     self.crate.graph[i][prop] = val
                     self._graph_index = i
                     break
-
-    def __contains__(self, prop: str) -> bool:
-        return prop in self.props
-
-    def __iter__(self) -> Iterator[str]:
-        yield from self.props.keys()
-
-    def keys(self) -> KeysView[str]:
-        return self.props.keys()
-
-    def values(self) -> ValuesView[Union[str, Dict]]:
-        return self.props.values()
-
-    def items(self) -> ItemsView[str, Any]:
-        return self.props.items()
-
-    def get(self, prop: str, default: Union[str, Any]) -> Union[str, Any]:
-        return self.props.get(prop, default)
 
     def get_dict(self, prop: str) -> Optional[Dict]:
         """get a property on this entity but only return it if it's a Dict"""

@@ -38,7 +38,7 @@ def test_crate(tmp_path):
         eid = f"#ds{i:05d}"
         ea = jcrate.get(eid)
         eb = jcrate2.get(eid)
-        assert ea.props == eb.props
+        assert ea.data == eb.data
 
 
 def load_json(json_file):
