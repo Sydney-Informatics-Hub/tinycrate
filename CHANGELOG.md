@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Fixed bug which was making TinyEntity hang when you tried to iterate over
 its properties with [ for blah in entity ]
 
+Made TinyEntity properties all return values as lists
+
 ## [0.1.2]
 
 Fixed auto date bug, added type annotations to tinycrate.py

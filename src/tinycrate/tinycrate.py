@@ -25,37 +25,53 @@ class TinyCrateException(Exception):
     pass
 
 
+def ensure_list(val):
+    if type(val) is not list:
+        return [val]
+    else:
+        return val
+
+
 class TinyEntity(UserDict):
     def __init__(self, crate: TinyCrate, ejsonld: dict[str, Any]) -> None:
         self.crate = crate
-        self.type = ejsonld["@type"]
+        self.type = ensure_list(ejsonld["@type"])
         self.id = ejsonld["@id"]
-        self.data = dict(ejsonld)
+        self.data = {}
         # Store index in parent crate's graph for later updates
         self._graph_index = None
+        for key, val in ejsonld.items():
+            if key not in ["@id", "@type"]:
+                self[key] = val  # __setitem__ ensures list
         for i, entity in enumerate(self.crate.graph):
             if entity["@id"] == self.id:
                 self._graph_index = i
                 break
 
+    @property
+    def props(self):
+        return self.data
+
     def __getitem__(self, prop: str) -> List[Union[str, Any]]:
         if prop in self.data:
-            if type(self.data[prop]) is list:
-                return self.data[prop]
-            else:
-                return [self.data[prop]]
+            return self.data[prop]
         return []
 
     def __setitem__(self, prop: str, val: Union[str, Any]) -> None:
-        self.data[prop] = val
+        """Values are convered to lists on setting if they are not"""
+        if type(val) is not list:
+            lval = [val]
+        else:
+            lval = val
+        self.data[prop] = lval
         # Update the corresponding entity in the parent crate's graph
         if self._graph_index is not None:
-            self.crate.graph[self._graph_index][prop] = val
+            self.crate.graph[self._graph_index][prop] = lval
         else:
             # If index not found, search for the entity and update it
             for i, entity in enumerate(self.crate.graph):
                 if entity["@id"] == self.id:
-                    self.crate.graph[i][prop] = val
+                    self.crate.graph[i][prop] = lval
                     self._graph_index = i
                     break
 

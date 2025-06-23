@@ -11,6 +11,8 @@ def test_basic_entity():
     entity = crate.get("#mydata")
     for prop, val in props.items():
         assert entity[prop] == [val]
+        assert entity.data[prop] == [val]
+        assert entity.props[prop] == [val]
 
 
 def test_modify_entity(tmp_path):
