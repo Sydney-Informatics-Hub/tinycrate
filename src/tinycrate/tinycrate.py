@@ -41,7 +41,9 @@ class TinyEntity(UserDict):
         # Store index in parent crate's graph for later updates
         self._graph_index = None
         for key, val in ejsonld.items():
-            if key not in ["@id", "@type"]:
+            if key == "@id":
+                self.data["@id"] = val
+            else:
                 self[key] = val  # __setitem__ ensures list
         for i, entity in enumerate(self.crate.graph):
             if entity["@id"] == self.id:

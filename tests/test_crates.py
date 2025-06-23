@@ -71,7 +71,10 @@ def test_load_file(crates):
         entity = crate.get(json_ent["@id"])
         assert entity is not None
         for prop, val in entity.items():
-            assert val == ensure_list(json_ent[prop])
+            if prop == "@id":
+                assert val == json_ent[prop]
+            else:
+                assert val == ensure_list(json_ent[prop])
 
 
 def test_load_dir(crates):
@@ -90,7 +93,10 @@ def test_load_dir(crates):
         entity = crate.get(json_ent["@id"])
         assert entity is not None
         for prop, val in entity.items():
-            assert val == ensure_list(json_ent[prop])
+            if prop == "@id":
+                assert val == json_ent[prop]
+            else:
+                assert val == ensure_list(json_ent[prop])
 
 
 def test_load_url(crates, httpserver: HTTPServer):
@@ -108,7 +114,10 @@ def test_load_url(crates, httpserver: HTTPServer):
         entity = crate.get(json_ent["@id"])
         assert entity is not None
         for prop, val in entity.items():
-            assert val == ensure_list(json_ent[prop])
+            if prop == "@id":
+                assert val == json_ent[prop]
+            else:
+                assert val == ensure_list(json_ent[prop])
 
 
 def test_load_utf8(crates):

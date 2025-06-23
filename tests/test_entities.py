@@ -8,6 +8,7 @@ def test_basic_entity():
     crate = minimal_crate()
     props = {"name": "A dataset", "description": "The description of the dataset"}
     crate.add("Dataset", "#mydata", props)
+    props["@type"] = "Dataset"
     entity = crate.get("#mydata")
     for prop, val in props.items():
         assert entity[prop] == [val]
