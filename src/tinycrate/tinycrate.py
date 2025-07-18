@@ -132,6 +132,12 @@ class TinyCrate:
         else:
             self.context = "https://w3id.org/ro/crate/1.1/context"
             self.graph: list[dict] = []
+        missing_ids = [e for e in self.graph if "@id" not in e]
+        if missing_ids:
+            raise TinyCrateException("Entities missing ids: " + str(missing_ids))
+        missing_types = [e for e in self.graph if "@type" not in e]
+        if missing_types:
+            raise TinyCrateException("Entities missing types: " + str(missing_types))
 
     def _open_jsonld(self, jsonld: dict[str, Any]) -> None:
         """Load a dict representing a JSON-LD"""

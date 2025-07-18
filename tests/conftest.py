@@ -12,6 +12,13 @@ def crates():
 
 
 @pytest.fixture
+def invalid_crates():
+    return {
+        "missing_types": "./tests/crates/invalid/missing_types",
+    }
+
+
+@pytest.fixture
 def contexts():
     return {
         "simple": {
