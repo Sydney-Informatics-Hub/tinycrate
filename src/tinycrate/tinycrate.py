@@ -105,6 +105,7 @@ class TinyCrate:
     def __init__(self, source: Union[str, Path, None] = None) -> None:
         self.directory: Optional[Path] = None
         self._context_resolver: Optional[JSONLDContextResolver] = None
+        self._id_index: dict[str, dict] = {}
         if source is not None:
             if isinstance(source, PurePath):
                 self._open_path(source)
@@ -135,6 +136,7 @@ class TinyCrate:
             raise TinyCrateException("No @graph in json-ld")
         self.context = jsonld["@context"]
         self.graph = jsonld["@graph"]
+        self._id_index = {e["@id"]: e for e in self.graph}
 
     def _open_path(self, path: Path) -> None:
         """Load a file or Path, which can be the jsonld file or its
@@ -175,16 +177,14 @@ class TinyCrate:
         json_props["@id"] = i
         json_props["@type"] = t
         self.graph.append(json_props)
+        self._id_index[i] = json_props
 
     def all(self) -> list[TinyEntity]:
         return [TinyEntity(self, e) for e in self.graph]
 
     def get(self, i: str) -> Optional[TinyEntity]:
-        es = [e for e in self.graph if e["@id"] == i]
-        if es:
-            return TinyEntity(self, es[0])
-        else:
-            return None
+        e = self._id_index.get(i) 
+        return TinyEntity(self, e) if e else None
 
     def deref(self, entity: TinyEntity, prop: str) -> Optional[TinyEntity]:
         """Given an entity and a property, try to follow the @id - needs
