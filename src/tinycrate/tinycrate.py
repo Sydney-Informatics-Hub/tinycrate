@@ -39,10 +39,8 @@ class TinyEntity:
         self.props = dict(ejsonld)
         # Store index in parent crate's graph for later updates
         self._graph_index = None
-        for i, entity in enumerate(self.crate.graph):
-            if entity["@id"] == self.id:
-                self._graph_index = i
-                break
+        if self.id in self.crate._id_index:
+            self._graph_index = self.crate._id_index[self.id][0]
 
     def __getitem__(self, prop: str) -> Union[str, Dict, None]:
         return self.props.get(prop, None)
@@ -52,13 +50,6 @@ class TinyEntity:
         # Update the corresponding entity in the parent crate's graph
         if self._graph_index is not None:
             self.crate.graph[self._graph_index][prop] = val
-        else:
-            # If index not found, search for the entity and update it
-            for i, entity in enumerate(self.crate.graph):
-                if entity["@id"] == self.id:
-                    self.crate.graph[i][prop] = val
-                    self._graph_index = i
-                    break
 
     def get_dict(self, prop: str) -> Optional[Dict]:
         """get a property on this entity but only return it if it's a Dict"""
@@ -105,6 +96,7 @@ class TinyCrate:
     def __init__(self, source: Union[str, Path, None] = None) -> None:
         self.directory: Optional[Path] = None
         self._context_resolver: Optional[JSONLDContextResolver] = None
+        self._id_index: dict[str, dict] = {}
         if source is not None:
             if isinstance(source, PurePath):
                 self._open_path(source)
@@ -135,6 +127,7 @@ class TinyCrate:
             raise TinyCrateException("No @graph in json-ld")
         self.context = jsonld["@context"]
         self.graph = jsonld["@graph"]
+        self._id_index = {e["@id"]: (i, e) for i, e in enumerate(self.graph)}
 
     def _open_path(self, path: Path) -> None:
         """Load a file or Path, which can be the jsonld file or its
@@ -175,16 +168,17 @@ class TinyCrate:
         json_props["@id"] = i
         json_props["@type"] = t
         self.graph.append(json_props)
+        self._id_index[i] = (len(self.graph) - 1, json_props)
 
     def all(self) -> list[TinyEntity]:
         return [TinyEntity(self, e) for e in self.graph]
 
     def get(self, i: str) -> Optional[TinyEntity]:
-        es = [e for e in self.graph if e["@id"] == i]
-        if es:
-            return TinyEntity(self, es[0])
-        else:
-            return None
+        entry = self._id_index.get(i) 
+        if entry:
+            _, e = entry  # unpacking (index, entity) tuple
+            return TinyEntity(self, e)
+        return None
 
     def deref(self, entity: TinyEntity, prop: str) -> Optional[TinyEntity]:
         """Given an entity and a property, try to follow the @id - needs
