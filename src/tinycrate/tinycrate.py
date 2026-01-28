@@ -127,7 +127,6 @@ class TinyCrate:
             raise TinyCrateException("No @graph in json-ld")
         self.context = jsonld["@context"]
         self.graph = jsonld["@graph"]
-        # Store (index, entity) tuple for O(1) lookups in TinyEntity
         self._id_index = {e["@id"]: (i, e) for i, e in enumerate(self.graph)}
 
     def _open_path(self, path: Path) -> None:
