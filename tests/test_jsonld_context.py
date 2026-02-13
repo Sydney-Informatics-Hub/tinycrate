@@ -84,6 +84,10 @@ def test_resolve_existing_iri(contexts):
     resolver = JSONLDContextResolver(contexts["simple"])
     assert resolver.resolve_term("http://example.org/test") == "http://example.org/test"
 
+    """ And an IRI that is a bit odd"""
+    assert resolver.resolve_term("http://example.org/test#fragment") == "http://example.org/test#fragment"
+    resolver = JSONLDContextResolver(contexts["simple"])
+    assert resolver.resolve_term("arcp://name,custom/terms#languageSubFamily") == "arcp://name,custom/terms#languageSubFamily"
 
 # test with mediumcontext defined above local:whatever
 def test_resolve_term_with_local_context(contexts):
